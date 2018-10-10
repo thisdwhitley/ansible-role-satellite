@@ -1,0 +1,61 @@
+# config
+install
+cmdline
+skipx
+reboot
+cdrom
+eula --agreed
+firstboot --disable
+logging --level=info
+
+# authentication
+auth  --useshadow  --passalgo=sha512
+rootpw --iscrypted {{ ks_root_password }}
+firewall --enabled --service=ssh
+selinux --enforcing
+
+# localazation
+lang en_US.UTF-8
+keyboard --vckeymap=us --xlayouts='us'
+timezone America/New_York --isUtc
+
+# network
+# network  --bootproto=dhcp --device=ens3 --ipv6=disable --activate
+# network  --bootproto=dhcp --hostname={{ vm.name }}
+network  --bootproto=static --device=ens3 --gateway={{ host_ip }} --ip={{ vm.ip }} --netmask=255.255.255.0 --ipv6=disable --activate
+network --hostname={{ vm.name }}
+
+%pre
+# capture the device name of the first drive so it doesn't have to be hardcoded
+set $(list-harddrives);
+d1=$1 # This is the device of disk 1
+cat <<FIRSTDRIVE | /usr/bin/tee /tmp/firstdrive
+part /boot --size=500  --fstype=xfs --ondrive=$d1
+part pv.01 --size=1000 --grow       --ondrive=$d1
+FIRSTDRIVE
+%end
+
+# disks
+bootloader --append=" crashkernel=auto" --location=mbr
+zerombr
+clearpart --all --initlabel
+%include /tmp/firstdrive # populated in pre section above
+volgroup vg00 --pesize=4096 pv.01
+logvol /              --fstype=xfs --size=10240 --vgname=vg00 --name=lv_root
+logvol /home          --fstype=xfs --size=2048  --vgname=vg00 --name=lv_home
+logvol /var           --fstype=xfs --size=51200 --vgname=vg00 --name=lv_var
+logvol /var/log       --fstype=xfs --size=4096  --vgname=vg00 --name=lv_var_log
+logvol /var/log/audit --fstype=xfs --size=4096  --vgname=vg00 --name=lv_var_log_audit
+logvol swap           --fstype=swap --size=4096 --vgname=vg00 --name=lv_swap
+
+%packages
+@core
+chrony
+kexec-tools
+%end
+
+%anaconda
+pwpolicy root --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+pwpolicy user --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
+pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+%end
