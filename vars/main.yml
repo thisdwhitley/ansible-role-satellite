@@ -1,0 +1,30 @@
+# these are variables that needed for Satellite and will not likely change
+# between deployments
+
+sat_repos:
+  - rhel-7-server-rpms
+  - rhel-server-rhscl-7-rpms
+  - rhel-7-server-satellite-6.3-rpms
+  - rhel-7-server-extras-rpms
+  - rhel-7-server-satellite-maintenance-6-rpms
+  - rhel-7-server-optional-rpms
+
+sat_ports:
+  - '80/tcp'   # HTTP
+  - '443/tcp'  # HTTPS
+  - '5646/tcp' # qpid/Katello
+  - '5647/tcp' # qpid/Katello
+  - '5671/tcp' # amqp
+  - '5674/tcp' # amqp
+  - '8140/tcp' # Puppet
+  - '9090/tcp' # Foreman Smart Proxy / Capsule
+  - '53/tcp'   # DNS
+  - '53/udp'   # DNS
+  - '67/udp'   # DHCP
+  - '68/udp'   # DHCP
+  - '69/udp'   # TFTP
+  - '389/tcp'  # LDAP
+  - '636/tcp'  # LDAPS
+  - '88/tcp'   # Kerberos
+  - '464/tcp'  # Kerberos
+  - '123/udp' # NTP
