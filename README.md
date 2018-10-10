@@ -13,22 +13,22 @@ following decisions:
   the naming of the tasks (these are likely to change as I add functionality
   and I'm unlikely to remember to update this...):
   
-    $ tree roles/satellite/tasks
-    roles/satellite/tasks
-    ├── 01_os_config.yml
-    ├── 02_app_install.yml
-    ├── 03_env_config.yml
-    ├── 03a_manifest.yml
-    ├── 03b_sat_domain.yml
-    ├── 03c_openscap.yml
-    ├── 03d_sync_config.yml
-    ├── 03e_lifecycles.yml
-    ├── 03f_RHrepos.yml
-    ├── 03g_nonRHproducts-repos.yml
-    ├── 03h_standardCVs.yml
-    ├── 03i_compositeCVs.yml
-    ├── 03j_CVfilters.yml
-    └── main.yml
+        $ tree roles/satellite/tasks
+        roles/satellite/tasks
+        ├── 01_os_config.yml
+        ├── 02_app_install.yml
+        ├── 03_env_config.yml
+        ├── 03a_manifest.yml
+        ├── 03b_sat_domain.yml
+        ├── 03c_openscap.yml
+        ├── 03d_sync_config.yml
+        ├── 03e_lifecycles.yml
+        ├── 03f_RHrepos.yml
+        ├── 03g_nonRHproducts-repos.yml
+        ├── 03h_standardCVs.yml
+        ├── 03i_compositeCVs.yml
+        ├── 03j_CVfilters.yml
+        └── main.yml
 
   - this is so that the tasks can use the same variables
   - also hope that it will be easier to go back and idempotentize (?) the tasks
