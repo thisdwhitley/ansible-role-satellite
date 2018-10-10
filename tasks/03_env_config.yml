@@ -1,0 +1,19 @@
+---
+## Sort of a placeholder at this point.
+
+- name: env_config| include the tasks related to configuring Satellite env
+  include_tasks: "{{ item }}"
+  with_items:
+    - 03a_manifest.yml              # takes <1 minute
+    - 03b_sat_domain.yml            # takes <1 minute
+    - 03c_openscap.yml              # takes ~3 minutes
+    - 03d_sync_config.yml           # takes <1 minute
+    - 03e_lifecycles.yml            # takes <1 minute
+    - 03f_RHrepos.yml               # takes ~75 minutes
+    - 03g_nonRHproducts-repos.yml   # takes ~35 minutes
+    - 03h_standardCVs.yml           # takes ~10 minutes | overall ~2.5 hrs here
+    - 03i_compositeCVs.yml
+    - 03j_CVfilters.yml
+    # # - 03g_ccv_RHEL7-EPEL.yml
+    # # - 03h_activation_keys.yml
+    # # - 03i_provision_libvirt.yml
