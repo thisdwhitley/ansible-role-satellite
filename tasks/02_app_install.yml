@@ -1,0 +1,89 @@
+---
+## These tasks will [install the Satellite RPMs as well as run the 
+# installation script][1] to get the Satellite running.
+#  The following variables are used and must be set elsewhere:
+#  - sat
+#      organization   # the organization used throughout
+#      location       # the location used throughout
+#      admin_password # the admin password for webUI
+#      dhcp_range     # Satellite will be configured to provide DHCP, this range
+#
+# [1]: https://access.redhat.com/documentation/en-us/red_hat_satellite/6.3/html-single/quick_start_guide/#installing_satellite_server_quickstart
+#
+# there are certain parts of this task that are going to be based on the system
+# as it is installed.  So instead of passing those items into the role/play
+# I will gather information from the OS where appropriate, but use facts that
+# are gathered by ansible by default whereever possible.  I don't know if this
+# is the right move.  I wll use other, deployment specific information that is
+# passed in...named "sat."
+
+- name: app_install| gather the VM's connection name for sat_conn
+  shell: >
+    nmcli -g NAME con show -a
+  register: sat_conn_info
+  tags: install
+
+- name: app_install| gather the VM's reverse DNS info for sat_rdns
+  shell: >
+    ip route get 8.8.8.8 | \
+    awk '/via/ {split($NF,a,/\./); print a[3]"."a[2]"."a[1]".in-addr.arpa"}'
+  register: sat_rdns_info
+  tags: install
+
+- name: app_install| set the variables for use in subsequent tasks
+  set_fact:
+    sat_nic: "{{ ansible_default_ipv4.interface }}"
+    sat_conn: "{{ sat_conn_info.stdout }}"
+    sat_ip: "{{ ansible_default_ipv4.address }}"
+    sat_rdns: "{{ sat_rdns_info.stdout }}"
+    sat_fqdn: "{{ ansible_fqdn }}"
+    sat_domain: "{{ ansible_domain }}"
+    host_ip: "{{ ansible_default_ipv4.gateway }}"
+  tags: install
+
+- name: app_install| install the Satellite RPMs (this takes a while...be patient)
+  package:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - satellite
+    - satellite-clone
+    - NetworkManager-glib
+  tags: install
+
+- name: app_install| satellite-installer (with embedded DHCP, TFTP, DNS)...also takes a while
+  command: >
+    satellite-installer -v 
+    --scenario satellite 
+    --foreman-initial-organization "{{ sat.organization }}" 
+    --foreman-initial-location "{{ sat.location }}" 
+    --foreman-admin-password "{{ sat.admin_password }}" 
+    --foreman-proxy-dns true 
+    --foreman-proxy-dns-interface "{{ sat_nic }}" 
+    --foreman-proxy-dns-zone "{{ sat_domain }}" 
+    --foreman-proxy-dns-forwarders "{{ host_ip }}" 
+    --foreman-proxy-dns-reverse "{{ sat_rdns }}" 
+    --foreman-proxy-dhcp true 
+    --foreman-proxy-dhcp-interface "{{ sat_nic }}" 
+    --foreman-proxy-dhcp-range "{{ sat.dhcp_range }}" 
+    --foreman-proxy-dhcp-gateway "{{ host_ip }}" 
+    --foreman-proxy-dhcp-nameservers "{{ sat_ip }}" 
+    --foreman-proxy-tftp true 
+    --foreman-proxy-tftp-servername "{{ sat_fqdn }}" 
+    --foreman-proxy-puppetca true 
+    --foreman-ipa-authentication=false
+  tags: install
+
+- name: app_install| modify default DNS of {{ sat_nic }} to point to itself
+  nmcli:
+    conn_name: "{{ sat_conn }}"
+    type: ethernet
+    dns4: "{{ sat_ip }}"
+    state: present
+  tags: install
+
+- name: app_install| restart NetworkManager to pick up updated DNS
+  service:
+    name: NetworkManager
+    state: restarted
+  tags: install
