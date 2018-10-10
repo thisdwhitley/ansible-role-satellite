@@ -5,9 +5,6 @@
 #  - sat
 #      organization   # the organization used throughout
 #
-#  NOTE: manifests for INTERNAL RH use are here:  
-#        http://file.rdu.redhat.com/~rjerrido/manifests/
-#
 # [1]: https://access.redhat.com/documentation/en-us/red_hat_satellite/6.3/html/quick_start_guide/installing_satellite_server#uploading_manifest
 
 - name: manifest| pause here if you have not put a manifest.zip file in /tmp
