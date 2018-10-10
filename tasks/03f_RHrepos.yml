@@ -1,0 +1,83 @@
+---
+## These tasks are specific to repositories provided by Red Hat and that are
+# made available by the manifest that you provide.  It is also worth noting that
+# some repos require to be tied to a release version while others do not...this
+# means I've cheated a little bit here based on the repos that I want to use, so
+# YMMV!
+#
+# So these tasks use [hammer to enable RH repositories][1] and then syncs them.
+# ...unfortunately, the name that you must to use to enable it, is not typically
+# the name of it.  For example, you must `hammer repository-set enable` the repo
+# name "Red Hat Enterprise Linux 7 Server (Kickstart)", but once it is enabled,
+# the actual NAME that must be used in further repository commands is:
+# Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.5"
+#
+#  The following variables are used and must be set elsewhere:
+#  - sat
+#      organization   # the organization used throughout
+#  - RHrepos
+#      set_name       # this is the name needed in repository-set commands
+#      repo_name      # this is the name needed in all other commands
+#      label          # not really used here
+#      basearch       # the architecture
+#      releasever     # tie it to a release version (*optional*)
+#  EXAMPLE:
+#    RHrepos:
+#      - set_name: "Red Hat Enterprise Linux 7 Server (RPMs)"
+#        repo_name: "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server"
+#        label: "rhel-7-server-rpms"
+#        basearch: "x86_64"
+#        releasever: "7Server"
+#
+# [1]: https://access.redhat.com/documentation/en-us/red_hat_satellite/6.3/html-single/content_management_guide/#Importing_Red_Hat_Content-Selecting_Red_Hat_Repositories_to_Synchronize
+
+- name: RHrepos| hammer> enable repositories needing "releasever"
+  command: >
+    hammer repository-set enable 
+    --organization "{{ sat.organization }}" 
+    --product 'Red Hat Enterprise Linux Server'
+    --name "{{ RHrepo.set_name }}"
+    --basearch "{{ RHrepo.basearch }}"
+    --releasever "{{ RHrepo.releasever }}"
+  when: 'RHrepo.releasever is defined'
+  with_items: "{{ RHrepos }}"
+  loop_control:
+    loop_var: RHrepo
+  tags: RHrepos
+
+- name: RHrepos| hammer> enable repositories not needing "releasever"
+  command: >
+    hammer repository-set enable 
+    --organization "{{ sat.organization }}" 
+    --product 'Red Hat Enterprise Linux Server'
+    --name "{{ NOBASErepo.set_name }}"
+    --basearch "x86_64"
+  when: 'NOBASErepo.releasever is not defined'
+  with_items: "{{ RHrepos }}"
+  loop_control:
+    loop_var: NOBASErepo
+  tags: RHrepos
+
+- name: RHrepos| hammer> set "Kickstart" repos download policy to immediate
+  command: >
+    hammer repository update
+    --organization "{{ sat.organization }}" 
+    --product 'Red Hat Enterprise Linux Server' 
+    --name "{{ KSrepo.repo_name }}" 
+    --download-policy immediate
+  when: '"Kickstart" in KSrepo.repo_name'
+  with_items: "{{ RHrepos }}"
+  loop_control:
+    loop_var: KSrepo
+  tags: RHrepos
+
+- name: RHrepos| hammer> sync the repos in "Red Hat Enterprise Linux Server"
+  command: >
+    hammer repository synchronize 
+    --organization "{{ sat.organization }}" 
+    --product 'Red Hat Enterprise Linux Server' 
+    --name '{{ RHsync.repo_name }}'
+  with_items: "{{ RHrepos }}"
+  loop_control:
+    loop_var: RHsync
+  tags: RHrepos

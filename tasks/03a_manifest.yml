@@ -1,0 +1,31 @@
+---
+## These tasks will check for a /tmp/manifest.zip file on the system calling it,
+#  place that file on the Satellite VM, and then use [hammer to upload it][1]
+#  The following variables are used and must be set elsewhere:
+#  - sat
+#      organization   # the organization used throughout
+#
+#  NOTE: manifests for INTERNAL RH use are here:  
+#        http://file.rdu.redhat.com/~rjerrido/manifests/
+#
+# [1]: https://access.redhat.com/documentation/en-us/red_hat_satellite/6.3/html/quick_start_guide/installing_satellite_server#uploading_manifest
+
+- name: manifest| pause here if you have not put a manifest.zip file in /tmp
+  wait_for:
+    msg: waiting for you to provide /tmp/manifest.zip
+    path: /tmp/manifest.zip
+  delegate_to: localhost
+  tags: manifest
+
+- name: manifest| copy /tmp/manifest.zip from ansible host to new satellite VM
+  copy:
+    src: /tmp/manifest.zip
+    dest: /root/manifest.zip
+  tags: manifest
+
+- name: manifest| hammer> upload manifest
+  command: >
+    hammer subscription upload 
+    --organization "{{ sat.organization}}" 
+    --file /root/manifest.zip
+  tags: manifest

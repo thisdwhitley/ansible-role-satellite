@@ -1,0 +1,33 @@
+---
+## This is a simple task that uses [hammer to create a lifecycle env][1] as well
+#  as some lifecycles as defined in variables.  The thought is that by pulling
+#  these out of the play, you can customize at time of creating the Satellite
+#  without having to modify the actual tasks...I'm not convinced this is any
+#  better.
+#  The following variables are used and must be set elsewhere:
+#  - sat
+#      organization   # the organization used throughout    
+#  - lifecycles:
+#      - name         # the name of this lifecycle (order matters)
+#        prior        # the previous lifecycle
+#  EXAMPLE:
+#    lifecycles:
+#      - name: Development
+#        prior: Library
+#      - name: Acceptance
+#        prior: Development
+#
+# [1]: https://access.redhat.com/documentation/en-us/red_hat_satellite/6.3/html-single/quick_start_guide/#creating_application_life_cycle_environment
+
+- name: lifecycle| hammer> create lifecycles
+  command: >
+    hammer lifecycle-environment create 
+    --organization "{{ sat.organization }}" 
+    --description "{{ lifecycle.name }}" 
+    --name "{{ lifecycle.name }}"
+    --label "{{ lifecycle.name|lower }}" 
+    --prior "{{ lifecycle.prior }}"
+  with_items: "{{ lifecycles }}"
+  loop_control:
+    loop_var: lifecycle
+  tags: lifecycle

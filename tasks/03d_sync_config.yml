@@ -1,0 +1,37 @@
+---
+## These tasks use hammer to [create a daily sync plan][1], then add the "Red 
+#  Hat Enterprise Linux Server" product to it.  We also go ahead and set the 
+#  [default policy to "Lazy Sync"][2].  It also uses some facts gathered by
+#  ansible.
+#  The following variables are used and must be set elsewhere:
+#  - sat
+#      organization   # the organization used throughout
+#
+# [1]: https://access.redhat.com/documentation/en-us/red_hat_satellite/6.3/html-single/content_management_guide/#Importing_Red_Hat_Content-Creating_a_Synchronization_Plan
+# [2]: https://access.redhat.com/articles/3358671
+
+- name: sync_config| hammer> set up a daily sync plan
+  command: >
+    hammer sync-plan create 
+    --name 'Daily Sync' 
+    --description 'Daily Synchronization Plan' 
+    --organization "{{ sat.organization }}" 
+    --interval daily 
+    --sync-date "{{ ansible_date_time.date }} 00:00:00" 
+    --enabled yes
+  tags: sync_config
+
+- name: sync_config| hammer> add the RHEL Product to Daily Sync Plan
+  command: >
+    hammer product set-sync-plan 
+    --organization "{{ sat.organization }}" 
+    --name "Red Hat Enterprise Linux Server" 
+    --sync-plan 'Daily Sync'
+  tags: sync_config
+
+- name: sync_config| hammer> set default sync policy to "Lazy Sync" (on-demand)
+  command: >
+    hammer settings set 
+    --name default_download_policy 
+    --value on_demand
+  tags: sync_config

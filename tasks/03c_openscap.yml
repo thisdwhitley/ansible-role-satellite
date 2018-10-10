@@ -1,0 +1,25 @@
+---
+## These tasks prepare our Satellite for OpenSCAP.  This is best described in
+#  the Host Configuration section of version 6.2[1] but the steps apply to
+#  Satellite 6.3 as well.  This is simply preparing the Satellite and does not
+#  touch on setting up policy or Host Groups...
+#
+# [1]: https://access.redhat.com/documentation/en-us/red_hat_satellite/6.2/html-single/host_configuration_guide/#idm140430258242560
+
+- name: openscap| install package for openscap
+  package:
+    name: puppet-foreman_scap_client
+    state: present
+  tags: openscap
+
+- name: openscap| enable openscap w/ satellite-installer
+  command: >
+    satellite-installer -v 
+    --scenario satellite
+    --enable-foreman-plugin-openscap
+  tags: openscap
+
+- name: openscap| load openscap content w/ foreman-rake
+  command: >
+    foreman-rake foreman_openscap:bulk_upload:default
+  tags: openscap
