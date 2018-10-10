@@ -1,0 +1,12 @@
+---
+## This task will simply include other task files.  Which might include other
+#  task files.  You know, to keep things interesting.
+
+- name: main| include some task files
+  include_tasks: "{{ task_file }}"
+  with_items:
+    - 01_os_config.yml    # this takes ~5 minutes
+    - 02_app_install.yml  # this takes ~35 minutes
+    - 03_env_config.yml   # this is cumulative 
+  loop_control:
+    loop_var: task_file
