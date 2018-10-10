@@ -41,7 +41,10 @@ following decisions:
 - hopefully this means I have made this generic enough that the larger public
   can use it
 
-The result is a Satellite ready for reproductions and demonstrations.
+The result is a Satellite ready for reproductions and demonstrations.  Because
+it needs to pull packages from the interwebs, the time it takes is variable
+based on your connection, but it typically finishes in about 2.5 hrs. as of this
+writing.
 
 Important Notes
 ---------------
@@ -68,6 +71,7 @@ I couldn't escape a few requirements:
   is a step that waits for you to register the new system (dangit)
 - You need to download **manifest** and name it as `/tmp/manifest.zip` on the
   system invoking the role/playbook (there is a task to wait for this)
+- Patience.  It takes a while to sync repositories and publish content views
 
 Role Variables
 --------------
