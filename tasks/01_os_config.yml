@@ -1,0 +1,59 @@
+---
+## These tasks will configure the OS in [prepration for a Satellite install][1].
+#  The following variables are used and must be set elsewhere:
+#  - sat_ports # a list of ports
+#  - sat_repos # a list of repositories that should be enabled
+#
+# [1]: https://access.redhat.com/documentation/en-us/red_hat_satellite/6.3/html-single/quick_start_guide/#preparing_for_satellite_server_installation
+#
+# I haven't been able to get an activation key yet, so wait for manual register
+# also need to ensure a subscription containing satellite bits is attached...
+
+- name: os_config|pause here while registering and attaching satellite subscription
+  wait_for:
+    msg: waiting for you to register satellite manually...
+    path: /etc/yum.repos.d/redhat.repo
+    search_regex: \[rhel-7-server-satellite-\d\.\d-rpms\]
+  tags: register
+
+- name: os_config|disable all repositories
+  rhsm_repository:
+    name: "*"
+    state: disabled
+  tags: register
+
+- name: os_config|enable Satellite repositories
+  rhsm_repository:
+    name: "{{ repo_name }}"
+    state: enabled
+  with_items: "{{ sat_repos }}"
+  loop_control:
+    loop_var: repo_name
+  tags: register
+
+- name: os_config|start and enable firewalld
+  service: 
+    name: firewalld
+    state: started
+    enabled: yes
+  tags: firewall
+
+- name: os_config|configure firewalld
+  firewalld:
+    port: "{{ port_info }}"
+    permanent: true
+    immediate: yes
+    state: enabled
+  with_items: "{{ sat_ports }}"
+  loop_control:
+    loop_var: port_info
+  tags: firewall
+
+- name: os_config|add myself to /etc/hosts
+  lineinfile: 
+    dest: /etc/hosts 
+    regexp: '.*{{ ansible_hostname }}$' 
+    line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
+    state: present
+  when: ansible_default_ipv4.address is defined
+  tags: etc-hosts
