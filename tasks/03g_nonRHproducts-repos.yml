@@ -1,0 +1,79 @@
+---
+# nonRHproduct:
+#   - name: "Extra Packages for Enterprise Linux"
+#     gpg_key_url: "https://dl.fedoraproject.org/pub/epel/RPM-GPG-KEY-EPEL-7"
+#     repo:
+#       name: "EPEL 7 - x86_64"
+#       url: "http://dl.fedoraproject.org/pub/epel/7/x86_64/"
+#       type: "yum"
+#       http: "true"
+#       chksum: "sha256"
+
+- name: nonRH| download non-Red Hat GPG KEY(s)
+  get_url:
+    url: "{{ nonRHkey.gpg_key_url }}"
+    dest: "/root/{{ nonRHkey.gpg_key_url | basename }}"
+  with_items: "{{ nonRHproduct }}"
+  loop_control:
+    loop_var: nonRHkey
+  tags: nonRH
+
+- name: nonRH| hammer> create GPG key(s) in Satellite
+  command: >
+    hammer gpg create
+    --organization "{{ sat.organization }}"
+    --key "/root/{{ nonRHgpg.gpg_key_url | basename }}"
+    --name "{{ nonRHgpg.gpg_key_url | basename }}"
+  with_items: "{{ nonRHproduct }}"
+  loop_control:
+    loop_var: nonRHgpg
+  tags: nonRH
+
+- name: nonRH| hammer> create the non-Red Hat product(s)
+  command: >
+    hammer product create
+    --organization "{{ sat.organization }}"
+    --name "{{ nonRHprod.name }}"
+    --description "{{ nonRHprod.name }}"
+  with_items: "{{ nonRHproduct }}"
+  loop_control:
+    loop_var: nonRHprod
+  tags: nonRH
+
+- name: nonRH| hammer> create repo for the non-Red Hat product(s)
+  command: >
+    hammer repository create
+    --organization "{{ sat.organization }}"
+    --product "{{ nonRHrepo.name }}"
+    --name "{{ nonRHrepo.repo.name }}"
+    --url "{{ nonRHrepo.repo.url }}"
+    --content-type "{{ nonRHrepo.repo.type }}"
+    --publish-via-http "{{ nonRHrepo.repo.http }}"
+    --checksum-type "{{ nonRHrepo.repo.chksum }}"
+    --gpg-key "{{ nonRHrepo.gpg_key_url | basename }}"
+  with_items: "{{ nonRHproduct }}"
+  loop_control:
+    loop_var: nonRHrepo
+  tags: nonRH
+
+- name: nonRH| hammer> add the new product(s) to Daily Sync Plan
+  command: >
+    hammer product set-sync-plan 
+    --organization "{{ sat.organization }}" 
+    --name "{{ nonRHplan.name }}" 
+    --sync-plan 'Daily Sync'
+  with_items: "{{ nonRHproduct }}"
+  loop_control:
+    loop_var: nonRHplan
+  tags: nonRH
+
+- name: nonRH| hammer> sync the repos in new non-Red Hat product(s)
+  command: >
+    hammer repository synchronize
+    --organization "{{ sat.organization }}"
+    --product "{{ nonRHsync.name }}"
+    --name "{{ nonRHsync.repo.name }}"
+  with_items: "{{ nonRHproduct }}"
+  loop_control:
+    loop_var: nonRHsync
+  tags: nonRH

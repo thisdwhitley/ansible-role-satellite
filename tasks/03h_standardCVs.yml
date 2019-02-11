@@ -1,0 +1,51 @@
+---
+# standardCVs:
+#   - name: "RHEL7_Base"
+#     desc: "Core Build for RHEL7"
+#     prod: "Red Hat Enterprise Linux Server"
+#     repos:
+#       - "Red Hat Enterprise Linux 7 Server RPMs x86_64 7Server"
+#       - "Red Hat Enterprise Linux 7 Server Kickstart x86_64 7.5"
+#       - "Red Hat Satellite Tools 6.3 for RHEL 7 Server RPMs x86_64"
+#   - name: "EPEL7"
+#     desc: "Only Extra Packages for Enterprise Linux 7"
+#     prod: "Extra Packages for Enterprise Linux"
+#     repos:
+#       - "EPEL 7 - x86_64"
+
+- name: hammer| create standard Content Views
+  command: >
+    hammer content-view create 
+    --organization "{{ sat.organization }}" 
+    --name "{{ createCV.name }}" 
+    --label "{{ createCV.name|lower }}" 
+    --description "{{ createCV.desc }}"
+  with_items: "{{ standardCVs }}"
+  loop_control:
+    loop_var: createCV
+  tags: standardCV
+
+- name: hammer| add specified Repositories to standard Content Views
+  command: >
+    hammer content-view add-repository 
+    --organization "{{ sat.organization }}" 
+    --name "{{ addrepoCV.0.name }}" 
+    --product "{{ addrepoCV.0.prod }}" 
+    --repository '{{ addrepoCV.1 }}'
+  with_subelements:
+    - "{{ standardCVs }}"
+    - repos
+  loop_control:
+    loop_var: addrepoCV
+  tags: standardCV
+
+- name: hammer| publish the standard Content Views
+  command: >
+    hammer content-view publish
+    --organization "{{ sat.organization }}"
+    --name "{{ pubCV.name }}" 
+    --description "Initial Publish {{ ansible_date_time.iso8601 }}"
+  with_items: "{{ standardCVs }}"
+  loop_control:
+    loop_var: pubCV
+  tags: standardCV

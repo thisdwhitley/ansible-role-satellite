@@ -1,0 +1,90 @@
+---
+## this is day 2 stuff
+- name: placeholder
+  debug:
+    msg: "I still need to figure out how I want to do this"
+# - name: hammer| create Content View Filter (include all packages without errata)
+#   command: >
+#     hammer content-view filter create 
+#     --organization "{{ sat.organization }}"
+#     --content-view EPEL7
+#     --name "All packages without errata"
+#     --inclusion true
+#     --type rpm
+#     --original-packages true
+#   tags: epel7
+
+# - name: hammer| create Content View Filter (All errata until Aug 1, 2017)
+#   command: >
+#     hammer content-view filter create
+#     --organization "{{ sat.organization }}"
+#     --content-view EPEL7
+#     --name "All errata until Aug 1, 2017"
+#     --inclusion true
+#     --type erratum
+#   tags: epel7
+
+# - name: hammer| create Rule for Filter (All errata until Aug 1, 2017)
+#   command: >
+#     hammer content-view filter rule create 
+#     --organization "{{ sat.organization }}"
+#     --content-view EPEL7
+#     --content-view-filter "All errata until Aug 1, 2017"
+#     --types enhancement,bugfix,security
+#     --end-date 2017-08-01
+#   tags: epel7
+
+# - name: hammer| create Content View Filter (Exclude Puppet packages)
+#   command: >
+#     hammer content-view filter create
+#     --organization "{{ sat.organization }}"
+#     --content-view EPEL7
+#     --name "Exclude Puppet packages"
+#     --inclusion false
+#     --type rpm
+#   tags: epel7
+
+# - name: hammer| create Rule for Filter (Exclude Puppet packages)
+#   command: >
+#     hammer content-view filter rule create
+#     --name "puppet*"
+#     --organization "{{ sat.organization }}"
+#     --content-view EPEL7
+#     --content-view-filter "Exclude Puppet packages"
+#   tags: epel7
+
+# - name: hammer| create Content View Filter (Exclude qpid packages)
+#   command: >
+#     hammer content-view filter create
+#     --organization "{{ sat.organization }}"
+#     --content-view EPEL7
+#     --name "Exclude qpid packages"
+#     --inclusion false
+#     --type rpm
+#   tags: epel7
+
+# - name: hammer| create Rule for Filter (Exclude qpid packages)
+#   command: >
+#     hammer content-view filter rule create 
+#     --name "*qpid*"
+#     --organization "{{ sat.organization }}"
+#     --content-view EPEL7
+#     --content-view-filter "Exclude qpid packages"
+#   tags: epel7
+
+# #hammer content-view filter create --organization RedHat --content-view EPEL --name "All packages without errata" --inclusion true --type rpm --original-packages true
+# #hammer content-view filter create --organization RedHat --content-view EPEL --name "All errata until Aug 1, 2017" --inclusion true --type erratum
+# #hammer content-view filter rule create --organization RedHat --content-view EPEL --content-view-filter "All errata until Aug 1, 2017" --types enhancement,bugfix,security --end-date 2017-08-01
+# #hammer content-view filter create --organization RedHat --content-view EPEL --name "Exclude Puppet packages" --inclusion false --type rpm
+# #hammer content-view filter rule create --name "puppet*" --organization RedHat --content-view EPEL --content-view-filter "Exclude Puppet packages"
+# #hammer content-view filter create --organization RedHat --content-view EPEL --name "Exclude qpid packages" --inclusion false --type rpm
+# #hammer content-view filter rule create --name "*qpid*" --organization RedHat --content-view EPEL --content-view-filter "Exclude qpid packages"
+# #hammer content-view publish --organization RedHat --name EPEL --description 'Added Filters for Aug 1, 2017'
+
+# - name: hammer| publish EPEL7 Content View after filters were added to show filters working
+#   command: >
+#     hammer content-view publish 
+#     --organization "{{ sat.organization }}"
+#     --name EPEL7
+#     --description 'Added Filters for Aug 1, 2017'
+#   tags: epel7

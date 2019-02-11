@@ -1,0 +1,74 @@
+---
+##
+# compositeCVs:
+#   - name: "Developmnet-RHEL7"
+#     desc: "Combination of RHEL7_Base and EPEL7 for Development"
+#     label: "composite_D_rhel7_epel7"
+#     CVs:
+#       - "RHEL7_Base"
+#       - "EPEL7"
+
+
+- name: placeholder for CCV
+  debug:
+    msg: "figure out how I want to do composite content views" 
+
+- name: get component ids
+  command: >
+    hammer --csv content-view list --name "{{ cvname.1 }}"
+  with_subelements:
+    - "{{ compositeCVs }}"
+    - CVs
+  loop_control:
+    loop_var: cvname
+  register: cvnames
+
+- name: output
+  debug:
+    msg: "{{ item.stdout_lines }}"
+  with_items:
+    - "{{ cvnames.results }}"
+
+- name: display all CVs
+  debug:
+    msg: "{{ ccv.1 }} needs to be part of {{ ccv.0.name }}"
+  with_subelements:
+    - "{{ compositeCVs }}"
+    - CVs
+  loop_control:
+    loop_var: ccv
+
+
+# - name: hammer| create Development-RHEL Composite Content View (RHEL7_Base + EPEL7)
+#   command: >
+#     hammer content-view create 
+#     --composite
+#     --organization "{{ sat.organization }}"
+#     --name 'Development-RHEL7'
+#     --label composite_D_rhel7_epel7
+#     --description 'Combination of RHEL7_Base and EPEL7 for Development'
+#   tags: ccv-rhel7-epel7
+
+# - name: hammer| add content views to composite content view for Development-RHEL7
+#   command: >
+#      hammer content-view update
+#      --organization "{{ sat.organization }}"
+#      --name "Development-RHEL7"
+#      --component-ids 2,3
+#   tags: ccv-rhel7-epel7
+
+# - name: hammer| publish composite content view Development-RHEL7
+#   command: >
+#     hammer content-view publish
+#     --organization "{{ sat.organization }}"
+#     --name Development-RHEL7
+#     --description 'Initial Publishing'
+#   tags: ccv-rhel7-epel7
+
+# - name: hammer| promote composite content view Development-RHEL7
+#   command: >
+#     hammer content-view version promote
+#     --organization "{{ sat.organization }}"
+#     --content-view Development-RHEL7
+#     --to-lifecycle-environment Development
+#   tags: ccv-rhel7-epel7
