@@ -9,12 +9,32 @@
 # I haven't been able to get an activation key yet, so wait for manual register
 # also need to ensure a subscription containing satellite bits is attached...
 
-- name: os_config|pause here while registering and attaching satellite subscription
-  wait_for:
-    msg: waiting for you to register satellite manually...
-    path: /etc/yum.repos.d/redhat.repo
-    search_regex: \[rhel-7-server-satellite-\d\.\d-rpms\]
+- name: os_config|attempt to use passed info (mainly for stage)
+  redhat_subscription:
+    state: present
+    username: "{{ rhsm.username }}"
+    password: "{{ rhsm.password }}"
+    server_hostname: "{{ rhsm.server }}"
+    rhsm_baseurl: "{{ rhsm.baseurl }}"
+    auto_attach: true
+  register: rhsm_result
   tags: register
+  when: rhsm.username is defined
+  ignore_errors: yes
+
+- name: os_config|if registration didn't work via variables, wait for it to be done manually
+  block:
+    - name: os_config|print message
+      debug:
+        msg: registering with your variables failed, you will need to log in and register manually
+
+    - name: os_config|pause here while registering and attaching satellite subscription
+      wait_for:
+        msg: waiting for you to register satellite manually...
+        path: /etc/yum.repos.d/redhat.repo
+        search_regex: \[rhel-7-server-satellite-\d\.\d-rpms\]
+  tags: register
+  when: rhsm_result.failed
 
 - name: os_config|disable all repositories
   rhsm_repository:
