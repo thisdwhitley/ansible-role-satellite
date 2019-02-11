@@ -70,8 +70,11 @@ I couldn't escape a few requirements:
   ***UPDATE*** I have updated this to allow you to pass variables if you want to
   attempt to automate this, but it will still pause if you need to register and
   subscribe manually.
-- You need to download **manifest** and name it as `/tmp/manifest.zip` on the
-  system invoking the role/playbook (there is a task to wait for this)
+- You need a manifest containing your subscriptions.  ***UPDATE*** you can pass
+  a web accessible file/URL pointing to a manifest, but if that is not specified
+  or does not work, you will need to download a **manifest** and name it as
+  `/tmp/manifest.zip` on the system invoking the role/playbook (there is a task
+  to wait for this)
 - Patience.  It takes a while to sync repositories and publish content views
 
 Role Variables
@@ -81,8 +84,8 @@ All of these variables should be considered **required** however, it will
 depend greatly on your own situation and configuration.  Just know that there is
 currently no sanity checking (and I'm insane):
 
-- `rhsm` - I've created a bit of a nested list here so that the variables can be 
-  used like rhsm.username
+- `rhsm` - *(optional)* I've created a bit of a nested list here so that the
+  variables can be used like rhsm.username
   - `username` - the username to be passed to Red Hat Subscription Manager
   - `password` - the password (*insert your typical warning about clear text
     passwords here*) to be passed to Red Hat Subscription Manager
@@ -97,6 +100,8 @@ currently no sanity checking (and I'm insane):
   - `location` - another aspect of permission granularity, created at install
   - `dhcp_range` - since we will configure the Satellite to serve DHCP (for
     provisioning) we need to specify a range
+  - `manifest_url` - *(optional)* this is poorly named, because this variable
+    needs to include the name of the manifest file too...
 - `lifecycles` - allows the definition of multiple lifecycles *(see example 
   below for usage)*
   - `name` - the name of a lifecycle (a lifecycle environment will be created by
@@ -148,6 +153,7 @@ Playbook with configuration options specified:
       organization: myOrg
       location: myLoc
       dhcp_range: "192.168.1.150 192.168.1.200"
+      manifest_url: http://file.server.com/manifests/Latest.zip
     lifecycles:
       - name: Development
         prior: Library

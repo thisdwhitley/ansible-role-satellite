@@ -1,26 +1,45 @@
 ---
-## These tasks will check for a /tmp/manifest.zip file on the system calling it,
-#  place that file on the Satellite VM, and then use [hammer to upload it][1]
+## These tasks will check for a manifest_url and attempt to download one, but if
+#  the download fails (like if the URL requires you to be on VPN...), we will
+#  use /tmp/manifest.zip file on the system calling it, place that file on the
+#  Satellite VM, and then use [hammer to upload it][1]
 #  The following variables are used and must be set elsewhere:
 #  - sat
 #      organization   # the organization used throughout
+#      manifest_url   # (optional) a URL to download a manifest
 #
 # [1]: https://access.redhat.com/documentation/en-us/red_hat_satellite/6.3/html/quick_start_guide/installing_satellite_server#uploading_manifest
 
-- name: manifest| pause here if you have not put a manifest.zip file in /tmp
-  wait_for:
-    msg: waiting for you to provide /tmp/manifest.zip
-    path: /tmp/manifest.zip
-  delegate_to: localhost
-  tags: manifest
-
-- name: manifest| copy /tmp/manifest.zip from ansible host to new satellite VM
-  copy:
-    src: /tmp/manifest.zip
+- name: manifest|download a manifest if a URL is passed
+  become: yes
+  get_url:
+    url: "{{ sat.manifest_url }}"
     dest: /root/manifest.zip
+  register: manifest_result
   tags: manifest
+  when: sat.manifest_url is defined
+  ignore_errors: yes
 
-- name: manifest| hammer> upload manifest
+- name: manifest|if downloading manifest didn't work
+  block:
+    - name: manifest|downloading a manifest didn't work...
+      debug:
+        msg: ...please download a manifest locally to /tmp/manifest.zip on the ansible host
+
+    - name: manifest|pause here if you have not put a manifest.zip file in /tmp
+      wait_for:
+        msg: waiting for you to provide /tmp/manifest.zip
+        path: /tmp/manifest.zip
+      delegate_to: localhost
+      
+    - name: manifest|copy /tmp/manifest.zip from ansible host to new satellite VM
+      copy:
+        src: /tmp/manifest.zip
+        dest: /root/manifest.zip
+  tags: manifest
+  when: manifest_result is skipped or manifest_result.failed
+
+- name: manifest|hammer> upload manifest
   command: >
     hammer subscription upload 
     --organization "{{ sat.organization}}" 
