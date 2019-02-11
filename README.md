@@ -66,9 +66,10 @@ I couldn't escape a few requirements:
 
 - You'll need to have your libvirt environment configured to your liking.  I'm
   working on creating my own preferences in a separate role...to be continued...
-- You need to have an appropriate subscription for Satellite packages and
-  unfortunately I currently have not been able to get an activation key so there
-  is a step that waits for you to register the new system (dangit)
+- You need to have an appropriate subscription for Satellite packages.
+  ***UPDATE*** I have updated this to allow you to pass variables if you want to
+  attempt to automate this, but it will still pause if you need to register and
+  subscribe manually.
 - You need to download **manifest** and name it as `/tmp/manifest.zip` on the
   system invoking the role/playbook (there is a task to wait for this)
 - Patience.  It takes a while to sync repositories and publish content views
@@ -80,6 +81,14 @@ All of these variables should be considered **required** however, it will
 depend greatly on your own situation and configuration.  Just know that there is
 currently no sanity checking (and I'm insane):
 
+- `rhsm` - I've created a bit of a nested list here so that the variables can be 
+  used like rhsm.username
+  - `username` - the username to be passed to Red Hat Subscription Manager
+  - `password` - the password (*insert your typical warning about clear text
+    passwords here*) to be passed to Red Hat Subscription Manager
+  - `server` - the URL to authenticate with (`:443/subscription` is appended by
+    default)
+  - `baseurl` - where the content will actually come from
 - `sat` - I've created a bit of a nested list here so that the variables can be 
   used like sat.organization
   - `admin_password` - this is the `admin` password for use on the webUI
@@ -129,6 +138,11 @@ Playbook with configuration options specified:
   hosts: satVM
   remote_user: root
   vars:
+    rhsm:
+      username: stageUSER
+      password: stagePWD
+      server: stage.example.com
+      baseurl: https://cdn.redhat.com
     sat:
       admin_password: pASSw0rd
       organization: myOrg
