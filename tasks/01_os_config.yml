@@ -24,9 +24,9 @@
 
 - name: os_config|if registration didn't work via variables, wait for it to be done manually
   block:
-    - name: os_config|print message
+    - name: os_config|registering with variables did not work...
       debug:
-        msg: registering with your variables failed, you will need to log in and register manually
+        msg: ...please log in to the VM and register it manually
 
     - name: os_config|pause here while registering and attaching satellite subscription
       wait_for:
@@ -34,7 +34,7 @@
         path: /etc/yum.repos.d/redhat.repo
         search_regex: \[rhel-7-server-satellite-\d\.\d-rpms\]
   tags: register
-  when: rhsm_result.failed
+  when: rhsm_result is skipped or rhsm_result.failed
 
 - name: os_config|disable all repositories
   rhsm_repository:
