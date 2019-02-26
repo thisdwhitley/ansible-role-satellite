@@ -9,11 +9,12 @@
 #
 # [1]: https://access.redhat.com/documentation/en-us/red_hat_satellite/6.3/html/quick_start_guide/associating_objects_with_the_default_organization_and_location#creating_new_domain
 
-- name: sat_domain| hammer> domain update
+- name: sat_domain| hammer> domain create
   command: >
-    hammer domain update 
+    hammer domain create 
     --name "{{ ansible_domain }}" 
-    --organizations "{{ sat.organization }}" 
+    --description "{{ sat.organization }}'s example domain" 
+    --dns_id 1 
     --locations "{{ sat.location }}" 
-    --dns "{{ ansible_fqdn }}"
+    --organizations "{{ sat.organization }}"
   tags: sat_domain
