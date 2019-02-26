@@ -51,6 +51,9 @@
     - NetworkManager-glib
   tags: install
 
+# the fact that I'm using "command" means this isn't idempotent, but it using
+# puppet behind the scenes.  and I've seen a return code 6 (which is a failure
+# in ansible's eyes) so I am setting this to retry the same command 3 times...
 - name: app_install| satellite-installer (with embedded DHCP, TFTP, DNS)...also takes a while
   command: >
     satellite-installer -v 
@@ -72,6 +75,10 @@
     --foreman-proxy-tftp-servername "{{ sat_fqdn }}" 
     --foreman-proxy-puppetca true 
     --foreman-ipa-authentication=false
+  register: sat-installer
+  retries: 3
+  delay: 5
+  until: sat-installer is succeeded
   tags: install
 
 - name: app_install| modify default DNS of {{ sat_nic }} to point to itself
