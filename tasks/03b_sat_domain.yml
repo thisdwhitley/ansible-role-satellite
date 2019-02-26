@@ -14,7 +14,7 @@
     hammer domain create 
     --name "{{ ansible_domain }}" 
     --description "{{ sat.organization }}'s example domain" 
-    --dns_id 1 
+    --dns-id 1 
     --locations "{{ sat.location }}" 
     --organizations "{{ sat.organization }}"
   tags: sat_domain
