@@ -75,10 +75,10 @@
     --foreman-proxy-tftp-servername "{{ sat_fqdn }}" 
     --foreman-proxy-puppetca true 
     --foreman-ipa-authentication=false
-  register: sat-installer
+  register: sat_installer
   retries: 3
   delay: 5
-  until: sat-installer is succeeded
+  until: sat_installer is succeeded
   tags: install
 
 - name: app_install| modify default DNS of {{ sat_nic }} to point to itself
